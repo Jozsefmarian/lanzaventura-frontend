@@ -1,8 +1,10 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
 
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <h1>Hello Lanzaventura 🌴</h1>
-  </React.StrictMode>,
-)
+window.onload = () => {
+  const root = ReactDOM.createRoot(document.getElementById('app')); // Itt biztosítjuk, hogy a DOM már betöltődött
+  root.render(<App />);
+};
+
+
