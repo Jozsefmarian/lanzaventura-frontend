@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Node.js modules
 node_modules/
 
@@ -13,3 +14,20 @@ node_modules/
 # OS generated files
 .DS_Store
 Thumbs.db
+=======
+# Node.js modules
+node_modules/
+
+# Build output
+/dist
+
+# Log files
+*.log
+
+# Vite cache
+.vite/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+>>>>>>> 3ebdefa (Switch to main branch and add files)
