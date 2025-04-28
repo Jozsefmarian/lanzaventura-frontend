@@ -4,12 +4,14 @@ export default defineConfig({
   root: './', // Alapértelmezett könyvtár
   build: {
     outDir: 'dist', // Az exportált fájlok mappája
-    minify: false,  // A minifikálás letiltása
+    minify: false,  // Ne minifikálja a kódot
   },
   resolve: {
     alias: {
       '@': '/src', // Alias a src mappára
     },
   },
-  mode: 'development', // Fejlesztési mód engedélyezése
+  define: {
+    'process.env.NODE_ENV': '"development"',  // Fejlesztői környezet engedélyezése
+  },
 });
