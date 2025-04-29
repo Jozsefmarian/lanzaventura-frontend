@@ -11,7 +11,7 @@ export default function SearchForm({ onSearch }) {
     onSearch({
       residence: 'HU',
       nationality: 'HU',
-      city_id: city,
+      region_id: Number(city),
       checkin: checkin,
       checkout: checkout,
       guests: [
