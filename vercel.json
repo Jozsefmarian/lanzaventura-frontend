@@ -1,23 +1,9 @@
 {
   "version": 2,
   "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": { "distDir": "dist" }
-    },
-    {
-      "src": "api/**/*.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    // 1) Az /api/* útvonalak először a Node funkciókhoz mennek:
-    { "src": "/api/(.*)", "dest": "/api/$1.js" },
-    // 2) A létező fájlokat közvetlenül kiszolgáljuk (dist, assets stb.)
-    { "handle": "filesystem" },
-    // 3) Minden GET kérést SPA fallback-ként index.html-re irányítunk
-    { "src": "/.*", "methods": ["GET"], "dest": "/index.html" }
+    { "src": "api/**/*.js",       "use": "@vercel/node" },
+    { "src": "package.json",      "use": "@vercel/static-build", "config": { "distDir": "dist" } }
   ]
 }
+
 
