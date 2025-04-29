@@ -1,15 +1,19 @@
+// vercel.json
 {
   "version": 2,
   "builds": [
     {
-      "src":   "package.json",
-      "use":   "@vercel/static-build",
+      "src": "package.json",
+      "use": "@vercel/static-build",
       "config": { "distDir": "dist" }
     }
   ],
   "routes": [
+    // 1) API-kéréseket először a function-hez irányítjuk
+    { "src": "/api/(.*)", "dest": "/api/$1.js" },
+    // 2) statikus fájlok (assets, dist) kiszolgálása
     { "handle": "filesystem" },
-    { "src": "/.*", "dest": "/index.html" }
+    // 3) minden GET lekérést SPA fallback-ként index.html-re
+    { "src": "/.*", "methods": ["GET"], "dest": "/index.html" }
   ]
 }
-
