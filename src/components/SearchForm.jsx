@@ -1,57 +1,50 @@
-import React, { useState } from 'react';
+// src/components/SearchForm.jsx
+import { useState } from 'react';
 
 export default function SearchForm({ onSearch }) {
-  const [city, setCity] = useState('');
+  const [regionId, setRegionId] = useState('');
   const [checkin, setCheckin] = useState('');
   const [checkout, setCheckout] = useState('');
   const [adults, setAdults] = useState(2);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = e => {
     e.preventDefault();
     onSearch({
       residence: 'HU',
       nationality: 'HU',
-      region_id: Number(city),
-      checkin: checkin,
-      checkout: checkout,
-      guests: [
-        {
-          adults: adults,
-          children: []
-        }
-      ]
+      region_id: Number(regionId),
+      checkin,
+      checkout,
+      guests: [{ adults, children: [] }],
     });
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}
-    >
+    <form onSubmit={handleSubmit}>
       <input
-        type="text"
-        placeholder="Város ID"
-        value={city}
-        onChange={(e) => setCity(e.target.value)}
+        type="number"
+        placeholder="Region ID"
+        value={regionId}
+        onChange={e => setRegionId(e.target.value)}
         required
       />
       <input
         type="date"
         value={checkin}
-        onChange={(e) => setCheckin(e.target.value)}
+        onChange={e => setCheckin(e.target.value)}
         required
       />
       <input
         type="date"
         value={checkout}
-        onChange={(e) => setCheckout(e.target.value)}
+        onChange={e => setCheckout(e.target.value)}
         required
       />
       <input
         type="number"
         min="1"
         value={adults}
-        onChange={(e) => setAdults(Number(e.target.value))}
+        onChange={e => setAdults(Number(e.target.value))}
         required
       />
       <button type="submit">Keresés</button>

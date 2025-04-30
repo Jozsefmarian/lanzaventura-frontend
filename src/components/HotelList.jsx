@@ -1,21 +1,16 @@
-import React from 'react';
-
-export default function HotelList({ hotels }) {
+// src/components/HotelList.jsx
+export default function HotelList({ hotels, loading }) {
+  if (loading) return <p>Betöltés…</p>;
   if (!hotels.length) return <p>Nincs találat.</p>;
   return (
-    <div style={{ display: 'grid', gap: '1rem' }}>
+    <ul>
       {hotels.map(h => (
-        <div key={h.id} style={{ border: '1px solid #ddd', padding: '1rem' }}>
-          {h.main_photo && (
-            <img src={h.main_photo} alt={h.name} style={{ maxWidth: '100%' }} />
-          )}
+        <li key={h.id}>
           <h3>{h.name}</h3>
-          <p>{h.address}</p>
-          <p>
-            Induló ár: {h.min_price.amount} {h.min_price.currency}
-          </p>
-        </div>
+          <p>Ár: {h.rates?.[0]?.price?.amount} {h.rates?.[0]?.price?.currency}</p>
+          {h.main_photo && <img src={h.main_photo} alt={h.name} width="200" />}
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }

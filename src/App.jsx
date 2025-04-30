@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+// src/App.jsx
+import { useState } from 'react';
 import SearchForm from './components/SearchForm';
 import HotelList from './components/HotelList';
 import { searchHotels } from './api';
@@ -22,12 +23,10 @@ export default function App() {
   };
 
   return (
-    <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
-      <header style={{ marginBottom: '2rem' }}>
-        <img src="/logo.png" alt="Lanzaventura" style={{ height: '80px', objectFit: 'contain' }} />
-      </header>
+    <div>
+      <h1>Lanzaventura Szálláskereső</h1>
       <SearchForm onSearch={handleSearch} />
-      {loading ? <p>Betöltés…</p> : <HotelList hotels={hotels} />}
+      <HotelList hotels={hotels} loading={loading} />
     </div>
-);
+  );
 }

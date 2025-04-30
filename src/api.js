@@ -1,16 +1,16 @@
 // src/api.js
 
-const BASE_URL = '/api/search';    // a saját serverless proxy-d
+const BASE_URL = '/api/search';
 
 export async function searchHotels(params) {
-  const response = await fetch(BASE_URL, {
+  const res = await fetch(BASE_URL, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(params)
   });
-  if (!response.ok) throw new Error('API error: ' + response.status);
-  return response.json();
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
 }
+
+
 
