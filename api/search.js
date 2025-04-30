@@ -9,18 +9,21 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  // Preflight kérések lekezelése
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
-  // Csak POST-ra válaszolunk
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  // A POST esetén viszont szükségesek az env-változók:
   const { RATEHAWK_API_ID, RATEHAWK_API_KEY } = process.env;
+  console.log('▶ ENV RATEHAWK_API_ID:', process.env.RATEHAWK_API_ID);
+  console.log('▶ ENV RATEHAWK_API_KEY:', process.env.RATEHAWK_API_KEY ? '***SET***' : '***MISSING***');
+  console.log('▶ Generated Auth header:', Buffer.from(
+    `${process.env.RATEHAWK_API_ID}:${process.env.RATEHAWK_API_KEY}`
+  ).toString('base64'));
+
     if (!RATEHAWK_API_ID || !RATEHAWK_API_KEY) {
     return res.status(500).json({ error: 'Missing API credentials' });
   }
