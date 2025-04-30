@@ -6,9 +6,11 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
+  // Preflight
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
+  // Csak GET-et engedélyezünk innen
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
@@ -18,6 +20,7 @@ export default async function handler(req, res) {
     return res.status(200).json({ data: [] });
   }
 
+  // Env változók
   const id = process.env.RATEHAWK_API_ID?.trim();
   const key = process.env.RATEHAWK_API_KEY?.trim();
   if (!id || !key) {
@@ -25,25 +28,28 @@ export default async function handler(req, res) {
   }
   const auth = Buffer.from(`${id}:${key}`).toString('base64');
 
-+  // Multicomplete GET -- q param in URL, not in body
-+  const url = `https://api.worldota.net/api/b2b/v3/search/multicomplete/?q=${encodeURIComponent(q)}`;
-+  const apiRes = await fetch(url, {
-+    method: 'GET',
-+    headers: {
-+      'Authorization': `Basic ${auth}`,
-+      'Accept': 'application/json'
-+    }
-+  });
+  try {
+    // IDE KÜLDJÜK POST-BAN a RateHawk multicomplete-nek
+    const apiRes = await fetch(
+      'https://api.worldota.net/api/b2b/v3/search/multicomplete/',
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${auth}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ q })
+      }
+    );
 
-  // Ha kell, debug-logolhatod:
-  // console.log('▶ multicomplete status:', apiRes.status);
-  // const dump = await apiRes.clone().json();
-  // console.log('▶ multicomplete body:', JSON.stringify(dump, null,2));
+    const json = await apiRes.json();
+    const regions = Array.isArray(json.data)
+      ? json.data.filter(item => item.type === 'region')
+      : [];
 
-  const json = await apiRes.json();
-  const regions = Array.isArray(json.data)
-    ? json.data.filter(item => item.type === 'region')
-    : [];
+    return res.status(200).json({ data: regions });
 
-  return res.status(200).json({ data: regions });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
 }
