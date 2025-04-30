@@ -1,17 +1,15 @@
 import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
 export default defineConfig({
-  root: './', // Alapértelmezett könyvtár
-  build: {
-    outDir: 'dist', // Az exportált fájlok mappája
-    minify: false,  // Ne minifikálja a kódot
-  },
+  plugins: [react()],
   resolve: {
     alias: {
-      '@': '/src', // Alias a src mappára
-    },
+      '@': '/src'
+    }
   },
-  define: {
-    'process.env.NODE_ENV': '"development"',  // Fejlesztői környezet engedélyezése
-  },
+  build: {
+    outDir: 'dist'
+  }
 });
+
