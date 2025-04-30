@@ -20,8 +20,8 @@ export default async function handler(req, res) {
   }
 
   // A POST esetén viszont szükségesek az env-változók:
-  const { VITE_RATEHAWK_API_ID, VITE_RATEHAWK_API_KEY } = process.env;
-  if (!VITE_RATEHAWK_API_ID || !VITE_RATEHAWK_API_KEY) {
+  const { RATEHAWK_API_ID, RATEHAWK_API_KEY } = process.env;
+    if (!RATEHAWK_API_ID || !RATEHAWK_API_KEY) {
     return res.status(500).json({ error: 'Missing API credentials' });
   }
 
@@ -33,9 +33,7 @@ export default async function handler(req, res) {
       {
         method: 'POST',
         headers: {
-          'Authorization': `Basic ${Buffer.from(
-            `${VITE_RATEHAWK_API_ID}:${VITE_RATEHAWK_API_KEY}`
-          ).toString('base64')}`,
+          'Authorization': `Basic ${Buffer.from(`${RATEHAWK_API_ID}:${RATEHAWK_API_KEY}`).toString('base64')}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(params)
