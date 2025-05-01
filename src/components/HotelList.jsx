@@ -1,16 +1,29 @@
-// src/components/HotelList.jsx
+import React from 'react';
+
 export default function HotelList({ hotels, loading }) {
-  if (loading) return <p>Betöltés…</p>;
-  if (!hotels.length) return <p>Nincs találat.</p>;
+  if (loading) {
+    return <p>Betöltés…</p>;
+  }
+  if (!hotels || hotels.length === 0) {
+    return <p>Nincs találat.</p>;
+  }
+
   return (
-    <ul>
-      {hotels.map(h => (
-        <li key={h.id}>
-          <h3>{h.name}</h3>
-          <p>Ár: {h.rates?.[0]?.price?.amount} {h.rates?.[0]?.price?.currency}</p>
-          {h.main_photo && <img src={h.main_photo} alt={h.name} width="200" />}
-        </li>
-      ))}
+    <ul className="hotel-list">
+      {hotels.map(hotel => {
+        const name = hotel.title || hotel.name || 'Név ismeretlen';
+        const imgUrl = (hotel.images && hotel.images[0]?.url) || '';
+        const price = hotel.minPrice ?? hotel.price ?? '–';
+        const currency = hotel.currency || '';
+
+        return (
+          <li key={hotel.id || hotel.hotel_id} className="hotel-item">
+            {imgUrl && <img src={imgUrl} alt={name} className="hotel-image" />}
+            <h3 className="hotel-name">{name}</h3>
+            <p className="hotel-price">Ár: {price} {currency}</p>
+          </li>
+        );
+      })}
     </ul>
   );
 }
