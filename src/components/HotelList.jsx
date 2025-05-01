@@ -1,38 +1,32 @@
-// src/components/HotelList.jsx
-import React from 'react';
+import React from "react";
 
-export default function HotelList({ hotels, loading }) {
-  if (loading) {
-    return <p>Betöltés…</p>;
-  }
+const HotelList = ({ hotels }) => {
+  console.log("▶ Hotels array:", hotels); // DEBUG
+
   if (!hotels || hotels.length === 0) {
     return <p>Nincs találat.</p>;
   }
 
   return (
-    <ul className="hotel-list">
-      {hotels.map((hotel) => {
-        const name    = hotel.name || hotel.hotel_name || 'Név ismeretlen';
-        const imgUrl  = hotel.images?.[0]?.url || '';
-        const price   = hotel.min_price ?? hotel.minPrice ?? '–';
-        const curr    = hotel.currency || hotel.currency_code || '';
+    <div className="hotel-list">
+      {hotels.map((hotel, index) => {
+        const name = hotel.name || "Név nem elérhető";
+        const price = hotel.min_price?.amount;
+        const currency = hotel.min_price?.currency || "HUF";
+        const image = hotel.photo_urls?.[0] || hotel.main_photo_url || "";
 
         return (
-          <li key={hotel.hotel_id} className="hotel-item">
-            {imgUrl && (
-              <img
-                src={imgUrl}
-                alt={name}
-                className="hotel-image"
-              />
-            )}
-            <h3 className="hotel-name">{name}</h3>
-            <p className="hotel-price">
-              Ár: {price} {curr}
+          <div key={index} className="hotel-card">
+            {image && <img src={image} alt={name} width="200" />}
+            <h3>{name}</h3>
+            <p>
+              Ár: {price ? `${price} ${currency}` : "Nem elérhető"}
             </p>
-          </li>
+          </div>
         );
       })}
-    </ul>
+    </div>
   );
-}
+};
+
+export default HotelList;
