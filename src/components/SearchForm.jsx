@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 export default function SearchForm({ onSearch }) {
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
-  const [regionId, setRegionId] = useState('');
+  const [regionId, setRegionId] = useState('715');
   const [checkin, setCheckin] = useState('');
   const [checkout, setCheckout] = useState('');
   const [adults, setAdults] = useState(2);
