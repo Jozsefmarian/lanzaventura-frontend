@@ -1,58 +1,77 @@
 import React, { useState, useEffect } from "react";
-import { fetchSuggestions } from "../api/autocomplete";
 
-const Autocomplete = ({ onSelect }) => {
+export default function Autocomplete({ onSelect }) {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (query.length < 2) {
+    if (query.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+
+    fetch(`/api/autocomplete?q=${encodeURIComponent(query)}`)
+      .then((res) => res.json())
+      .then((json) => {
+        console.log("🔎 Autocomplete suggestions:", json.data);
+        setSuggestions(json.data || []);
+      })
+      .catch((err) => {
+        console.error("Autocomplete fetch error:", err);
         setSuggestions([]);
-        return;
-      }
-
-      try {
-        const data = await fetchSuggestions(query);
-        setSuggestions(data);
-        setShowSuggestions(true);
-      } catch (err) {
-        console.error("Hiba a javaslatok betöltésekor:", err);
-      }
-    };
-
-    const timeout = setTimeout(fetchData, 300);
-    return () => clearTimeout(timeout);
+      });
   }, [query]);
 
-  const handleSelect = (suggestion) => {
-    setQuery(suggestion.label);
+  const handleSelect = (item) => {
+    onSelect(item);
+    setQuery(item.name);
     setSuggestions([]);
-    setShowSuggestions(false);
-    onSelect(suggestion);
   };
 
   return (
-    <div className="autocomplete">
+    <div style={{ position: "relative" }}>
       <input
         type="text"
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Úticél"
+        onChange={(e) => {
+          setQuery(e.target.value);
+        }}
+        placeholder="Írd be a várost vagy hotelt..."
         autoComplete="off"
+        required
       />
-      {showSuggestions && suggestions.length > 0 && (
-        <ul className="suggestion-list">
+      {suggestions.length > 0 && (
+        <ul
+          style={{
+            position: "absolute",
+            top: "100%",
+            left: 0,
+            zIndex: 10,
+            backgroundColor: "white",
+            border: "1px solid #ccc",
+            width: "100%",
+            listStyle: "none",
+            padding: 0,
+            margin: 0,
+            maxHeight: "200px",
+            overflowY: "auto",
+          }}
+        >
           {suggestions.map((item) => (
-            <li key={item.id} onClick={() => handleSelect(item)}>
-              {item.label}
+            <li
+              key={item.id}
+              onClick={() => handleSelect(item)}
+              style={{
+                padding: "8px",
+                cursor: "pointer",
+                borderBottom: "1px solid #eee",
+              }}
+            >
+              {item.name} <small>({item.type})</small>
             </li>
           ))}
         </ul>
       )}
     </div>
   );
-};
-
-export default Autocomplete;
+}
