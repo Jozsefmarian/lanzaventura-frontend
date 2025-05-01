@@ -1,16 +1,10 @@
-// src/api.js
-
-const BASE_URL = '/api/search';
-
 export async function searchHotels(params) {
-  const res = await fetch(BASE_URL, {
+  const res = await fetch('/api/search', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(params)
+    body: JSON.stringify(params),
   });
   if (!res.ok) throw new Error(`API error: ${res.status}`);
-  return res.json();
+  const data = await res.json();
+  return data.hotels;
 }
-
-
-
