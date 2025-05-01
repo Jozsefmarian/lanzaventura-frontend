@@ -1,25 +1,9 @@
-# Node.js modules
 node_modules/
-
-# Build output
-/dist
-
-# Log files
-*.log
-
-# Vite cache
+dist/
 .vite/
-
-# OS generated files
-.DS_Store
-Thumbs.db
-
-node_modules/
-dist/
-node_modules/
-dist/
-
-.vercel
-.env
+.vercel/
 .env
 .env.local
+region.json*
+region_v3.jsonl*
+request.json
