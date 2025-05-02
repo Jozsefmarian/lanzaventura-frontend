@@ -11,7 +11,7 @@ export default function Autocomplete({ onSelect }) {
     fetch("/api/regions")
       .then((res) => res.json())
       .then((json) => {
-        setRegions(json.data || []);
+        setRegions(json.data?.regions || []);
       })
       .catch((err) => console.error("Region fetch error:", err))
       .finally(() => setLoading(false));
