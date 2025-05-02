@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 export default function Autocomplete({ onSelect }) {
   const [query, setQuery] = useState("");
   const [regions, setRegions] = useState([]);
-  const [filtered, setFiltered] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [noResults, setNoResults] = useState(false);
 
@@ -13,44 +13,46 @@ export default function Autocomplete({ onSelect }) {
       .then((json) => {
         setRegions(json.data || []);
       })
-      .catch((err) => console.error("Region dump fetch error:", err))
+      .catch((err) => console.error("Region fetch error:", err))
       .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
-    if (query.length < 2 || !regions.length) {
-      setFiltered([]);
+    if (query.length < 2) {
+      setSuggestions([]);
       setNoResults(false);
       return;
     }
 
-    const q = query.toLowerCase();
-    const matches = regions.filter((r) => r.name.toLowerCase().includes(q));
-    setFiltered(matches);
+    const matches = regions.filter((r) =>
+      r.name.toLowerCase().includes(query.toLowerCase())
+    );
+    setSuggestions(matches);
     setNoResults(matches.length === 0);
   }, [query, regions]);
 
   const handleSelect = (region) => {
     setQuery(region.name);
-    setFiltered([]);
+    setSuggestions([]);
     setNoResults(false);
-    onSelect({ id: region.id, name: region.name, type: "region" });
+    onSelect({ id: region.id, name: region.name });
   };
 
   return (
     <div style={{ position: "relative" }}>
       <input
         type="text"
+        id="region"
+        name="region"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Város neve..."
         autoComplete="off"
         required
-        name="destination"
       />
       {loading && <div style={{ position: "absolute", top: "100%" }}>Betöltés...</div>}
       {noResults && <div style={{ position: "absolute", top: "100%" }}>Nincs találat</div>}
-      {filtered.length > 0 && (
+      {suggestions.length > 0 && (
         <ul
           style={{
             position: "absolute",
@@ -64,7 +66,7 @@ export default function Autocomplete({ onSelect }) {
             width: "100%",
           }}
         >
-          {filtered.map((region) => (
+          {suggestions.map((region) => (
             <li
               key={region.id}
               onClick={() => handleSelect(region)}
