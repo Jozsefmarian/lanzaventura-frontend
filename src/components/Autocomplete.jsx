@@ -2,20 +2,9 @@ import React, { useState, useEffect } from "react";
 
 export default function Autocomplete({ onSelect }) {
   const [query, setQuery] = useState("");
-  const [regions, setRegions] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [noResults, setNoResults] = useState(false);
-
-  useEffect(() => {
-    fetch("/api/regions")
-      .then((res) => res.json())
-      .then((json) => {
-        setRegions(json.data?.regions || []);
-      })
-      .catch((err) => console.error("Region fetch error:", err))
-      .finally(() => setLoading(false));
-  }, []);
 
   useEffect(() => {
     if (query.length < 2) {
@@ -24,18 +13,33 @@ export default function Autocomplete({ onSelect }) {
       return;
     }
 
-    const matches = regions.filter((r) =>
-      r.name.toLowerCase().includes(query.toLowerCase())
-    );
-    setSuggestions(matches);
-    setNoResults(matches.length === 0);
-  }, [query, regions]);
+    const controller = new AbortController();
+    const signal = controller.signal;
 
-  const handleSelect = (region) => {
-    setQuery(region.name);
+    setLoading(true);
+
+    fetch(`/api/autocomplete?q=${encodeURIComponent(query)}`, { signal })
+      .then((res) => res.json())
+      .then((json) => {
+        const items = json.data || [];
+        setSuggestions(items);
+        setNoResults(items.length === 0);
+      })
+      .catch((err) => {
+        if (err.name !== "AbortError") {
+          console.error("Autocomplete fetch error:", err);
+        }
+      })
+      .finally(() => setLoading(false));
+
+    return () => controller.abort();
+  }, [query]);
+
+  const handleSelect = (item) => {
+    setQuery(item.name);
     setSuggestions([]);
     setNoResults(false);
-    onSelect({ id: region.id, name: region.name });
+    onSelect(item);
   };
 
   return (
@@ -46,11 +50,11 @@ export default function Autocomplete({ onSelect }) {
         name="region"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Város neve..."
+        placeholder="Város vagy hotel neve..."
         autoComplete="off"
         required
       />
-      {loading && <div style={{ position: "absolute", top: "100%" }}>Betöltés...</div>}
+      {loading && <div style={{ position: "absolute", top: "100%" }}>Keresés...</div>}
       {noResults && <div style={{ position: "absolute", top: "100%" }}>Nincs találat</div>}
       {suggestions.length > 0 && (
         <ul
@@ -66,13 +70,13 @@ export default function Autocomplete({ onSelect }) {
             width: "100%",
           }}
         >
-          {suggestions.map((region) => (
+          {suggestions.map((item) => (
             <li
-              key={region.id}
-              onClick={() => handleSelect(region)}
+              key={item.id}
+              onClick={() => handleSelect(item)}
               style={{ padding: "0.5rem", cursor: "pointer" }}
             >
-              {region.name}
+              {item.name} {item.type === "hotel" ? "(szálloda)" : ""}
             </li>
           ))}
         </ul>
