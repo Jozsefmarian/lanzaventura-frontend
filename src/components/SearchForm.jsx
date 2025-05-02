@@ -54,8 +54,15 @@ export default function SearchForm({ onSearch }) {
       const result = await res.json();
 
       if (!res.ok || result.status !== "ok") {
-        throw new Error(result?.error || "Ismeretlen API hiba.");
-      }
+  console.error("Ratehawk search error:", result?.error || result);
+  alert("Hiba történt a keresés során.");
+  return;
+}
+
+if (result.data?.hotels?.length === 0) {
+  alert("Nincs találat a megadott időszakra.");
+  return;
+}
 
       console.log("Találatok:", result);
       onSearch(result);
