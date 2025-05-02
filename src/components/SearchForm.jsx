@@ -26,9 +26,9 @@ export default function SearchForm({ onSearch }) {
     };
 
     if (region.type === "region") {
-      payload.ids = [String(region.id)];
+      payload.ids = [Number(region.id)];
     } else if (region.type === "hotel") {
-      payload.hids = [String(region.id)];
+      payload.hids = [Number(region.id)];
     }
 
     console.log("🔹 Keresési payload:", payload);
