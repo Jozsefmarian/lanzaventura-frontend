@@ -6,6 +6,7 @@ export default function SearchForm({ onSearch }) {
   const [checkin, setCheckin] = useState("");
   const [checkout, setCheckout] = useState("");
   const [adults, setAdults] = useState(2);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,15 +31,16 @@ export default function SearchForm({ onSearch }) {
     };
 
     if (region.type === "region") {
-  payload.ids = [String(region.id)];
-} else if (region.type === "hotel") {
-  payload.hids = [String(region.id)];
-} else {
-  alert("Ismeretlen keresési típus. Kérlek, válassz újra!");
-  return;
-}
+      payload.ids = [String(region.id)];
+    } else if (region.type === "hotel") {
+      payload.hids = [String(region.id)];
+    } else {
+      alert("Ismeretlen keresési típus. Kérlek, válassz újra!");
+      return;
+    }
 
     console.log("Keresési payload:", payload);
+    setLoading(true);
 
     try {
       const res = await fetch("/api/search", {
@@ -49,16 +51,19 @@ export default function SearchForm({ onSearch }) {
         body: JSON.stringify(payload)
       });
 
-      if (!res.ok) {
-        throw new Error(`API error: ${res.status}`);
+      const result = await res.json();
+
+      if (!res.ok || result.status !== "ok") {
+        throw new Error(result?.error || "Ismeretlen API hiba.");
       }
 
-      const result = await res.json();
       console.log("Találatok:", result);
       onSearch(result);
     } catch (err) {
       console.error("Keresési hiba:", err);
       alert("Hiba történt a keresés során.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -70,7 +75,6 @@ export default function SearchForm({ onSearch }) {
       <label htmlFor="checkin">Érkezés</label>
       <input
         type="date"
-        name="checkin"
         id="checkin"
         value={checkin}
         onChange={(e) => setCheckin(e.target.value)}
@@ -80,7 +84,6 @@ export default function SearchForm({ onSearch }) {
       <label htmlFor="checkout">Távozás</label>
       <input
         type="date"
-        name="checkout"
         id="checkout"
         value={checkout}
         onChange={(e) => setCheckout(e.target.value)}
@@ -90,15 +93,16 @@ export default function SearchForm({ onSearch }) {
       <label htmlFor="adults">Felnőttek száma</label>
       <input
         type="number"
-        name="adults"
         id="adults"
-        value={adults}
         min={1}
+        value={adults}
         onChange={(e) => setAdults(Number(e.target.value))}
         required
       />
 
-      <button type="submit">Keresés</button>
+      <button type="submit" disabled={loading}>
+        {loading ? "Keresés..." : "Keresés"}
+      </button>
     </form>
   );
 }
