@@ -31,7 +31,7 @@ export default function SearchForm({ onSearch }) {
     };
 
     if (region.type === "region") {
-      payload.region_ids = [String(region.id)];
+      payload.ids = [String(region.id)];
     } else if (region.type === "hotel") {
       payload.hids = [String(region.id)];
     }
