@@ -2,30 +2,39 @@ import React, { useState, useEffect } from "react";
 
 export default function Autocomplete({ onSelect }) {
   const [query, setQuery] = useState("");
-  const [suggestions, setSuggestions] = useState([]);
+  const [regions, setRegions] = useState([]);
+  const [filtered, setFiltered] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [noResults, setNoResults] = useState(false);
 
   useEffect(() => {
-    if (query.length < 2) {
-      setSuggestions([]);
+    fetch("/api/regions")
+      .then((res) => res.json())
+      .then((json) => {
+        setRegions(json.data || []);
+      })
+      .catch((err) => console.error("Region dump fetch error:", err))
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    if (query.length < 2 || !regions.length) {
+      setFiltered([]);
+      setNoResults(false);
       return;
     }
 
-    fetch(`/api/autocomplete?q=${encodeURIComponent(query)}`)
-      .then((res) => res.json())
-      .then((json) => {
-        console.log("🔎 Autocomplete suggestions:", json.data);
-        setSuggestions(json.data || []);
-      })
-      .catch((err) => {
-        console.error("Autocomplete fetch error:", err);
-        setSuggestions([]);
-      });
-  }, [query]);
+    const q = query.toLowerCase();
+    const matches = regions.filter((r) => r.name.toLowerCase().includes(q));
+    setFiltered(matches);
+    setNoResults(matches.length === 0);
+  }, [query, regions]);
 
-  const handleSelect = (item) => {
-    onSelect(item);
-    setQuery(item.name);
-    setSuggestions([]);
+  const handleSelect = (region) => {
+    setQuery(region.name);
+    setFiltered([]);
+    setNoResults(false);
+    onSelect({ id: region.id, name: region.name, type: "region" });
   };
 
   return (
@@ -33,41 +42,35 @@ export default function Autocomplete({ onSelect }) {
       <input
         type="text"
         value={query}
-        onChange={(e) => {
-          setQuery(e.target.value);
-        }}
-        placeholder="Írd be a várost vagy hotelt..."
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Város neve..."
         autoComplete="off"
         required
+        name="destination"
       />
-      {suggestions.length > 0 && (
+      {loading && <div style={{ position: "absolute", top: "100%" }}>Betöltés...</div>}
+      {noResults && <div style={{ position: "absolute", top: "100%" }}>Nincs találat</div>}
+      {filtered.length > 0 && (
         <ul
           style={{
             position: "absolute",
             top: "100%",
-            left: 0,
-            zIndex: 10,
-            backgroundColor: "white",
+            zIndex: 1000,
+            backgroundColor: "#fff",
             border: "1px solid #ccc",
-            width: "100%",
-            listStyle: "none",
-            padding: 0,
             margin: 0,
-            maxHeight: "200px",
-            overflowY: "auto",
+            padding: 0,
+            listStyle: "none",
+            width: "100%",
           }}
         >
-          {suggestions.map((item) => (
+          {filtered.map((region) => (
             <li
-              key={item.id}
-              onClick={() => handleSelect(item)}
-              style={{
-                padding: "8px",
-                cursor: "pointer",
-                borderBottom: "1px solid #eee",
-              }}
+              key={region.id}
+              onClick={() => handleSelect(region)}
+              style={{ padding: "0.5rem", cursor: "pointer" }}
             >
-              {item.name} <small>({item.type})</small>
+              {region.name}
             </li>
           ))}
         </ul>
