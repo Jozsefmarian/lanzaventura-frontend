@@ -3,29 +3,55 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  try {
-    const RH_USER = process.env.RATEHAWK_API_ID;
-    const RH_PASSWORD = process.env.RATEHAWK_API_KEY;
+  const {
+    checkin,
+    checkout,
+    residency,
+    nationality,
+    currency,
+    guests,
+    ids,
+    hids
+  } = req.body;
 
+  const payload = {
+    checkin,
+    checkout,
+    residency,
+    nationality,
+    currency,
+    guests
+  };
+
+  if (ids) {
+    payload.ids = ids.map(String);
+  } else if (hids) {
+    payload.hids = hids.map(String);
+  }
+
+  console.log("🔹 Kimenő Ratehawk keresési payload:", JSON.stringify(payload, null, 2));
+
+  try {
     const response = await fetch("https://api.worldota.net/api/b2b/v3/search/serp/hotels/", {
       method: "POST",
       headers: {
-        "Authorization": "Basic " + Buffer.from(`${RH_USER}:${RH_PASSWORD}`).toString("base64"),
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        Authorization: "Basic " + Buffer.from(`${process.env.RATEHAWK_API_ID}:${process.env.RATEHAWK_API_KEY}`).toString("base64")
       },
-      body: JSON.stringify(req.body)
+      body: JSON.stringify(payload)
     });
 
     const data = await response.json();
-    console.log("🔹 Ratehawk válasz:", JSON.stringify(data, null, 2));
 
-    if (!response.ok || data.status !== "ok") {
-      return res.status(400).json({ error: data });
+    if (!response.ok) {
+      console.error("🔸 API hiba:", data);
+      return res.status(response.status).json({ error: data });
     }
 
-    return res.status(200).json(data);
+    console.log("✅ Találatok:", JSON.stringify(data, null, 2));
+    res.status(200).json(data);
   } catch (error) {
-    console.error("❌ Proxy hiba:", error);
-    return res.status(500).json({ error: "Proxy error" });
+    console.error("❌ Szerver hiba:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 }
