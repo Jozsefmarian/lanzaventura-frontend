@@ -22,7 +22,12 @@ export default function SearchForm({ onSearch }) {
       residence: "HU",
       nationality: "HU",
       currency: "HUF",
-      guests: [{ adults, children: [] }]
+      guests: [
+  {
+    adults: Number(adults),
+    children: []
+  }
+]
     };
 
     if (region.type === "region") {
