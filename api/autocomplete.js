@@ -6,10 +6,9 @@ export default async function handler(req, res) {
   let query = req.query.q || "";
 
   if (query.length < 2) {
-    return res.status(400).json({ error: "Túl rövid keresési kifejezés." });
+    return res.status(400).json({ error: "Too short query." });
   }
 
-  // Normalizált keresés: Budapest
   query = query.charAt(0).toUpperCase() + query.slice(1).toLowerCase();
 
   const username = process.env.RATEHAWK_API_ID;
@@ -23,22 +22,22 @@ export default async function handler(req, res) {
         "Authorization": `Basic ${auth}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ query })
+      body: JSON.stringify({
+        query,
+        language: "en"
+      })
     });
 
     const data = await response.json();
 
-    // ⚠️ Logoljuk a teljes választ Vercelbe
-    console.log("RATEHAWK MULTICOMPLETE VÁLASZ:", JSON.stringify(data, null, 2));
+    console.log("MULTICOMPLETE response:", JSON.stringify(data, null, 2));
 
     if (!response.ok) {
-      console.error("HIBA A RATEHAWK-TÓL:", data);
       return res.status(response.status).json({ error: data });
     }
 
     return res.status(200).json(data);
   } catch (err) {
-    console.error("Hiba a Ratehawk API elérésekor:", err);
-    return res.status(500).json({ error: "Kapcsolódási hiba", details: err.message });
+    return res.status(500).json({ error: "Error accessing Ratehawk", details: err.message });
   }
 }
