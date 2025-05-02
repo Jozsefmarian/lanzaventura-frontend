@@ -30,9 +30,9 @@ export default function SearchForm({ onSearch }) {
     };
 
     if (region.type === "region") {
-  payload.ids = [region.id];
+  payload.ids = [String(region.id)];
 } else if (region.type === "hotel") {
-  payload.hids = [region.id];
+  payload.hids = [String(region.id)];
 } else {
   alert("Ismeretlen keresési típus. Kérlek, válassz újra!");
   return;
