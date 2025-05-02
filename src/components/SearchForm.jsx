@@ -11,28 +11,30 @@ export default function SearchForm({ onSearch }) {
     e.preventDefault();
 
     if (!selected) {
-      alert("Kérlek, válassz egy javaslatot!");
+      alert("Kérlek, válassz egy javaslatot a listából!");
       return;
     }
 
     const base = {
       residence: "HU",
       nationality: "HU",
+      currency: "HUF",
       checkin,
       checkout,
       guests: [{ adults, children: [] }],
-      currency: "HUF",
     };
 
     if (selected.type === "hotel") {
       onSearch({ ...base, ids: [Number(selected.id)] });
-    } else {
+    } else if (selected.type === "region" || selected.type === "city") {
       onSearch({ ...base, region_id: Number(selected.id) });
+    } else {
+      alert("Nem támogatott keresési típus: " + selected.type);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
       <label>
         Helyszín:
         <Autocomplete onSelect={(item) => setSelected(item)} />
@@ -42,6 +44,7 @@ export default function SearchForm({ onSearch }) {
         Érkezés:
         <input
           type="date"
+          name="checkin"
           value={checkin}
           onChange={(e) => setCheckin(e.target.value)}
           required
@@ -52,6 +55,7 @@ export default function SearchForm({ onSearch }) {
         Távozás:
         <input
           type="date"
+          name="checkout"
           value={checkout}
           onChange={(e) => setCheckout(e.target.value)}
           required
@@ -59,12 +63,14 @@ export default function SearchForm({ onSearch }) {
       </label>
 
       <label>
-        Felnőttek:
+        Felnőttek száma:
         <input
           type="number"
+          name="adults"
           min="1"
           value={adults}
           onChange={(e) => setAdults(Number(e.target.value))}
+          required
         />
       </label>
 
