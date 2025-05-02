@@ -19,7 +19,7 @@ export default function SearchForm({ onSearch }) {
     const payload = {
       checkin,
       checkout,
-      residence: "HU",
+      residency: "HU",
       nationality: "HU",
       currency: "HUF",
       guests: [
