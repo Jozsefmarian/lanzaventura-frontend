@@ -21,10 +21,18 @@ export default function Autocomplete({ onSelect }) {
     fetch(`/api/autocomplete?q=${encodeURIComponent(query)}`, { signal })
       .then((res) => res.json())
       .then((json) => {
-        const items = json.data || [];
-        setSuggestions(items);
-        setNoResults(items.length === 0);
-      })
+  const data = json.data || {};
+  const regions = data.regions || [];
+  const hotels = data.hotels || [];
+
+  const combined = [
+    ...regions.map((r) => ({ id: r.id, name: r.name, type: "region" })),
+    ...hotels.map((h) => ({ id: h.hid, name: h.name, type: "hotel" })),
+  ];
+
+  setSuggestions(combined);
+  setNoResults(combined.length === 0);
+})
       .catch((err) => {
         if (err.name !== "AbortError") {
           console.error("Autocomplete fetch error:", err);
