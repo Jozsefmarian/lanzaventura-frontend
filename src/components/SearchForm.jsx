@@ -7,31 +7,64 @@ export default function SearchForm({ onSearch }) {
   const [checkout, setCheckout] = useState("");
   const [adults, setAdults] = useState(2);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!region || !region.id) {
-      alert("Kérlek, válassz egy várost a listából!");
+    if (!region || !region.id || !region.type) {
+      alert("Kérlek, válassz egy javaslatot a listából!");
       return;
     }
 
     const payload = {
-      region_id: Number(region.id),
       checkin,
       checkout,
-      guests: [{ adults, children: [] }],
       residence: "HU",
       nationality: "HU",
-      currency: "HUF"
+      currency: "HUF",
+      guests: [
+        {
+          adults,
+          children: []
+        }
+      ]
     };
 
+    if (region.type === "region") {
+      payload.region_id = region.id;
+    } else if (region.type === "hotel") {
+      payload.hid = region.id;
+    } else {
+      alert("Ismeretlen keresési típus. Kérlek, válassz újra!");
+      return;
+    }
+
     console.log("Keresési payload:", payload);
-    onSearch(payload);
+
+    try {
+      const res = await fetch("/api/search", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        throw new Error(`API error: ${res.status}`);
+      }
+
+      const result = await res.json();
+      console.log("Találatok:", result);
+      onSearch(result);
+    } catch (err) {
+      console.error("Keresési hiba:", err);
+      alert("Hiba történt a keresés során.");
+    }
   };
 
   return (
     <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-      <label htmlFor="region">Város</label>
+      <label htmlFor="region">Város vagy szálloda</label>
       <Autocomplete onSelect={setRegion} />
 
       <label htmlFor="checkin">Érkezés</label>
@@ -54,7 +87,7 @@ export default function SearchForm({ onSearch }) {
         required
       />
 
-      <label htmlFor="adults">Felnőttek</label>
+      <label htmlFor="adults">Felnőttek száma</label>
       <input
         type="number"
         name="adults"
