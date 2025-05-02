@@ -1,12 +1,6 @@
 export default async function handler(req, res) {
-  if (req.method !== "GET") {
+  if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
-  }
-
-  const query = req.query.q;
-
-  if (!query || query.length < 2) {
-    return res.status(400).json({ error: "Kérlek, adj meg legalább 2 karaktert." });
   }
 
   const username = process.env.RATEHAWK_API_ID;
@@ -14,13 +8,13 @@ export default async function handler(req, res) {
   const auth = Buffer.from(`${username}:${password}`).toString("base64");
 
   try {
-    const response = await fetch("https://api.worldota.net/api/b2b/v3/search/multicomplete/", {
+    const response = await fetch("https://api.worldota.net/api/b2b/v3/search/serp/hotels/", {
       method: "POST",
       headers: {
         "Authorization": `Basic ${auth}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ query })
+      body: JSON.stringify(req.body)
     });
 
     const data = await response.json();
@@ -31,6 +25,6 @@ export default async function handler(req, res) {
 
     res.status(200).json(data);
   } catch (err) {
-    res.status(500).json({ error: "Szerverhiba az autocomplete során", details: err.message });
+    res.status(500).json({ error: "Szerverhiba a keresés során", details: err.message });
   }
 }
