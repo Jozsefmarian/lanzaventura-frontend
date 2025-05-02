@@ -11,8 +11,8 @@ export default function SearchForm({ onSearch }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!region || !region.id || !region.type) {
-      alert("Kérlek, válassz egy javaslatot a listából!");
+    if (!region?.id || !region?.type) {
+      alert("Kérlek, válassz egy várost vagy hotelt a javaslatok közül.");
       return;
     }
 
@@ -22,53 +22,42 @@ export default function SearchForm({ onSearch }) {
       residence: "HU",
       nationality: "HU",
       currency: "HUF",
-      guests: [
-        {
-          adults,
-          children: []
-        }
-      ]
+      guests: [{ adults, children: [] }]
     };
 
     if (region.type === "region") {
       payload.ids = [String(region.id)];
     } else if (region.type === "hotel") {
       payload.hids = [String(region.id)];
-    } else {
-      alert("Ismeretlen keresési típus. Kérlek, válassz újra!");
-      return;
     }
 
-    console.log("Keresési payload:", payload);
+    console.log("🔹 Keresési payload:", payload);
     setLoading(true);
 
     try {
       const res = await fetch("/api/search", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
 
       const result = await res.json();
+      console.log("🔸 API válasz:", result);
 
       if (!res.ok || result.status !== "ok") {
-  console.error("Ratehawk search error:", result?.error || result);
-  alert("Hiba történt a keresés során.");
-  return;
-}
+        alert("API hiba vagy nem megfelelő válasz.");
+        return;
+      }
 
-if (result.data?.hotels?.length === 0) {
-  alert("Nincs találat a megadott időszakra.");
-  return;
-}
+      if (result.data?.hotels?.length === 0) {
+        alert("Nincs találat a megadott időszakra.");
+        return;
+      }
 
-      console.log("Találatok:", result);
-      onSearch(result);
+      onSearch(result.data.hotels);
     } catch (err) {
-      console.error("Keresési hiba:", err);
-      alert("Hiba történt a keresés során.");
+      console.error("❌ Keresési hiba:", err);
+      alert("Technikai hiba történt a keresés során.");
     } finally {
       setLoading(false);
     }
@@ -76,40 +65,11 @@ if (result.data?.hotels?.length === 0) {
 
   return (
     <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-      <label htmlFor="region">Város vagy szálloda</label>
       <Autocomplete onSelect={setRegion} />
-
-      <label htmlFor="checkin">Érkezés</label>
-      <input
-        type="date"
-        id="checkin"
-        value={checkin}
-        onChange={(e) => setCheckin(e.target.value)}
-        required
-      />
-
-      <label htmlFor="checkout">Távozás</label>
-      <input
-        type="date"
-        id="checkout"
-        value={checkout}
-        onChange={(e) => setCheckout(e.target.value)}
-        required
-      />
-
-      <label htmlFor="adults">Felnőttek száma</label>
-      <input
-        type="number"
-        id="adults"
-        min={1}
-        value={adults}
-        onChange={(e) => setAdults(Number(e.target.value))}
-        required
-      />
-
-      <button type="submit" disabled={loading}>
-        {loading ? "Keresés..." : "Keresés"}
-      </button>
+      <input type="date" value={checkin} onChange={(e) => setCheckin(e.target.value)} required />
+      <input type="date" value={checkout} onChange={(e) => setCheckout(e.target.value)} required />
+      <input type="number" min={1} value={adults} onChange={(e) => setAdults(Number(e.target.value))} />
+      <button type="submit" disabled={loading}>{loading ? "Keresés…" : "Keresés"}</button>
     </form>
   );
 }
