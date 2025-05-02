@@ -30,13 +30,13 @@ export default function SearchForm({ onSearch }) {
     };
 
     if (region.type === "region") {
-      payload.region_id = region.id;
-    } else if (region.type === "hotel") {
-      payload.hid = region.id;
-    } else {
-      alert("Ismeretlen keresési típus. Kérlek, válassz újra!");
-      return;
-    }
+  payload.ids = [region.id];
+} else if (region.type === "hotel") {
+  payload.hids = [region.id];
+} else {
+  alert("Ismeretlen keresési típus. Kérlek, válassz újra!");
+  return;
+}
 
     console.log("Keresési payload:", payload);
 
