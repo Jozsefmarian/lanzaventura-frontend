@@ -4,8 +4,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    const RH_USER = process.env.RATEHAWK_USER;     // például: 12146
-    const RH_PASSWORD = process.env.RATEHAWK_PASS; // például: a token
+    const RH_USER = process.env.RATEHAWK_API_ID;
+    const RH_PASSWORD = process.env.RATEHAWK_API_KEY;
 
     const response = await fetch("https://api.worldota.net/api/b2b/v3/search/serp/hotels/", {
       method: "POST",
