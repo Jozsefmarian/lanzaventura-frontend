@@ -1,32 +1,55 @@
-import React from "react";
+import React, { useState } from "react";
 
-const HotelList = ({ hotels }) => {
-  console.log("▶ Hotels array:", hotels); // DEBUG
+export default function HotelList({ searchPayload }) {
+  const [hotels, setHotels] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  if (!hotels || hotels.length === 0) {
-    return <p>Nincs találat.</p>;
-  }
+  React.useEffect(() => {
+    if (!searchPayload) return;
+
+    setLoading(true);
+    setError(null);
+
+    fetch("/api/search-hotels", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(searchPayload)
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setHotels(data.hotels || []);
+      })
+      .catch((err) => {
+        setError("Hiba történt a keresés során.");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [searchPayload]);
+
+  if (loading) return <p>Betöltés...</p>;
+  if (error) return <p style={{ color: "red" }}>{error}</p>;
 
   return (
-    <div className="hotel-list">
-      {hotels.map((hotel, index) => {
-        const name = hotel.name || "Név nem elérhető";
-        const price = hotel.min_price?.amount;
-        const currency = hotel.min_price?.currency || "HUF";
-        const image = hotel.photo_urls?.[0] || hotel.main_photo_url || "";
-
-        return (
-          <div key={index} className="hotel-card">
-            {image && <img src={image} alt={name} width="200" />}
-            <h3>{name}</h3>
-            <p>
-              Ár: {price ? `${price} ${currency}` : "Nem elérhető"}
-            </p>
-          </div>
-        );
-      })}
+    <div>
+      {hotels.length === 0 ? (
+        <p>Nincs találat.</p>
+      ) : (
+        <ul style={{ listStyle: "none", padding: 0 }}>
+          {hotels.map((hotel) => (
+            <li key={hotel.id} style={{ marginBottom: "2rem", border: "1px solid #ccc", padding: "1rem" }}>
+              <h3>{hotel.name}</h3>
+              {hotel.main_photo_url && (
+                <img src={hotel.main_photo_url} alt={hotel.name} style={{ width: "100%", maxWidth: "300px" }} />
+              )}
+              <p>Ár: {hotel.min_price?.amount} {hotel.min_price?.currency}</p>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
-};
-
-export default HotelList;
+}
