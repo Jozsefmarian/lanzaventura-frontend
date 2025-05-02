@@ -1,44 +1,84 @@
-export default async function handler(req, res) {
-  if (req.method !== "GET") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
+import React, { useState, useEffect } from "react";
 
-  let query = req.query.q || "";
+export default function Autocomplete({ onSelect }) {
+  const [query, setQuery] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [noResults, setNoResults] = useState(false);
 
-  if (query.length < 2) {
-    return res.status(400).json({ error: "Túl rövid keresési kifejezés." });
-  }
+  useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
 
-  // Normalizált keresés: Budapest
-  query = query.charAt(0).toUpperCase() + query.slice(1).toLowerCase();
-
-  const username = process.env.RATEHAWK_API_ID;
-  const password = process.env.RATEHAWK_API_KEY;
-  const auth = Buffer.from(`${username}:${password}`).toString("base64");
-
-  try {
-    const response = await fetch("https://api.worldota.net/api/b2b/v3/search/multicomplete/", {
-      method: "POST",
-      headers: {
-        "Authorization": `Basic ${auth}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ query })
-    });
-
-    const data = await response.json();
-
-    // ⚠️ Logoljuk a teljes választ Vercelbe
-    console.log("RATEHAWK MULTICOMPLETE VÁLASZ:", JSON.stringify(data, null, 2));
-
-    if (!response.ok) {
-      console.error("HIBA A RATEHAWK-TÓL:", data);
-      return res.status(response.status).json({ error: data });
+    if (query.length < 2) {
+      setSuggestions([]);
+      setNoResults(false);
+      return;
     }
 
-    return res.status(200).json(data);
-  } catch (err) {
-    console.error("Hiba a Ratehawk API elérésekor:", err);
-    return res.status(500).json({ error: "Kapcsolódási hiba", details: err.message });
-  }
+    setLoading(true);
+    fetch(`/api/autocomplete?q=${encodeURIComponent(query)}`, { signal })
+      .then((res) => res.json())
+      .then((json) => {
+        const items = json.data || [];
+        setSuggestions(items);
+        setNoResults(items.length === 0);
+      })
+      .catch((err) => {
+        if (err.name !== "AbortError") {
+          console.error("Autocomplete hiba:", err);
+        }
+      })
+      .finally(() => setLoading(false));
+
+    return () => controller.abort();
+  }, [query]);
+
+  const handleSelect = (item) => {
+    setQuery(item.name);
+    setSuggestions([]);
+    setNoResults(false);
+    onSelect(item);
+  };
+
+  return (
+    <div style={{ position: "relative" }}>
+      <input
+        type="text"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Város vagy hotel neve"
+        autoComplete="off"
+        name="destination"
+        required
+      />
+      {loading && <div style={{ position: "absolute", top: "100%" }}>Keresés...</div>}
+      {noResults && <div style={{ position: "absolute", top: "100%" }}>Nincs találat</div>}
+      {suggestions.length > 0 && (
+        <ul
+          style={{
+            position: "absolute",
+            top: "100%",
+            zIndex: 1000,
+            backgroundColor: "#fff",
+            border: "1px solid #ccc",
+            margin: 0,
+            padding: 0,
+            listStyle: "none",
+            width: "100%",
+          }}
+        >
+          {suggestions.map((item) => (
+            <li
+              key={item.id}
+              onClick={() => handleSelect(item)}
+              style={{ padding: "0.5rem", cursor: "pointer" }}
+            >
+              {item.name} {item.type === "hotel" ? "(szálloda)" : ""}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
 }
