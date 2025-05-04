@@ -1,20 +1,13 @@
 import { useState } from "react";
-import Autocomplete from "./components/Autocomplete";
 import SearchForm from "./components/SearchForm";
 
 function App() {
-  const [regions, setRegions] = useState([]);
   const [searchResults, setSearchResults] = useState(null);
 
   return (
     <div>
-      {/* Autocomplete: város/hotel kiválasztás */}
-      <Autocomplete onRegionsUpdate={setRegions} />
+      <SearchForm onSearch={setSearchResults} />
 
-      {/* Keresőpanel mindig megjelenik */}
-      <SearchForm regions={regions} onSearch={setSearchResults} />
-
-      {/* Eredmények megjelenítése */}
       {searchResults && (
         <div style={{ padding: "20px" }}>
           <h2>Találatok:</h2>
