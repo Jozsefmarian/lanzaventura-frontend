@@ -11,10 +11,8 @@ function App() {
       {/* Autocomplete: város/hotel kiválasztás */}
       <Autocomplete onRegionsUpdate={setRegions} />
 
-      {/* Kereső form: csak akkor jelenik meg, ha vannak autocomplete eredmények */}
-      {regions.length > 0 && (
-        <SearchForm regions={regions} onSearch={setSearchResults} />
-      )}
+      {/* Keresőpanel mindig megjelenik */}
+      <SearchForm regions={regions} onSearch={setSearchResults} />
 
       {/* Eredmények megjelenítése */}
       {searchResults && (
