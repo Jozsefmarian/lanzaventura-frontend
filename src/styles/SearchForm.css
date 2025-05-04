@@ -1,0 +1,19 @@
+.search-background {
+  background-image: url('/caribbean-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  padding: 60px 20px;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-form {
+  background-color: rgba(255, 255, 255, 0.85);
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  max-width: 600px;
+  width: 100%;
+}
