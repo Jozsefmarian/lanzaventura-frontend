@@ -1,31 +1,38 @@
-import React, { useState } from 'react';
-import SearchForm from './components/SearchForm';
-import HotelList from './components/HotelList';
-import { searchHotels } from './api';
+import { useState } from "react";
+import Autocomplete from "./components/Autocomplete";
+import SearchForm from "./components/SearchForm";
 
-export default function App() {
-  const [hotels, setHotels] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  const handleSearch = async (params) => {
-    setLoading(true);
-    try {
-      const hotels = await searchHotels(params);
-      setHotels(hotels);
-    } catch (err) {
-      console.error(err);
-      alert('Hiba a keresés során');
-      setHotels([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+function App() {
+  const [regions, setRegions] = useState([]);
+  const [searchResults, setSearchResults] = useState(null);
 
   return (
     <div>
-      <h1>Lanzaventura Szálláskereső</h1>
-      <SearchForm onSearch={handleSearch} />
-      <HotelList hotels={hotels} loading={loading} />
+      {/* Autocomplete: város/hotel kiválasztás */}
+      <Autocomplete onRegionsUpdate={setRegions} />
+
+      {/* Kereső form: csak akkor jelenik meg, ha vannak autocomplete eredmények */}
+      {regions.length > 0 && (
+        <SearchForm regions={regions} onSearch={setSearchResults} />
+      )}
+
+      {/* Eredmények megjelenítése */}
+      {searchResults && (
+        <div style={{ padding: "20px" }}>
+          <h2>Találatok:</h2>
+          {searchResults.data?.hotels?.length > 0 ? (
+            <ul>
+              {searchResults.data.hotels.map((hotel) => (
+                <li key={hotel.id}>{hotel.name}</li>
+              ))}
+            </ul>
+          ) : (
+            <p>Nincs találat a megadott időszakra.</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
+
+export default App;
