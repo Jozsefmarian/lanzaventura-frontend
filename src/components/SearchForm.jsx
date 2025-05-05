@@ -51,7 +51,7 @@ const SearchForm = ({ setResults }) => {
 
     try {
       setLoading(true);
-      const res = await fetch("/api/search-test", {
+      const res = await fetch("/api/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
