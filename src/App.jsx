@@ -1,27 +1,11 @@
-import { useState } from "react";
+import React from "react";
 import SearchForm from "./components/SearchForm";
+import "./styles/searchform.css"; // biztosítjuk, hogy a stílus érvényesüljön
 
 function App() {
-  const [searchResults, setSearchResults] = useState(null);
-
   return (
-    <div>
-      <SearchForm onSearch={setSearchResults} />
-
-      {searchResults && (
-        <div style={{ padding: "20px" }}>
-          <h2>Találatok:</h2>
-          {searchResults.data?.hotels?.length > 0 ? (
-            <ul>
-              {searchResults.data.hotels.map((hotel) => (
-                <li key={hotel.id}>{hotel.name}</li>
-              ))}
-            </ul>
-          ) : (
-            <p>Nincs találat a megadott időszakra.</p>
-          )}
-        </div>
-      )}
+    <div className="app-container">
+      <SearchForm />
     </div>
   );
 }
