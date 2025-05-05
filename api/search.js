@@ -13,31 +13,35 @@ export default async function handler(req) {
   try {
     const body = await req.json();
 
-    const response = await fetch('https://api.worldota.net/api/b2b/v3/search', {
+    const rhUrl = 'https://api.worldota.net/api/b2b/v3/search';
+    const authHeader = 'Basic ' + btoa(`${process.env.RATEHAWK_USER_ID}:${process.env.RATEHAWK_API_KEY}`);
+
+    const response = await fetch(rhUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization:
-          'Basic ' +
-          btoa(`${process.env.RATEHAWK_USER_ID}:${process.env.RATEHAWK_API_KEY}`),
+        Authorization: authHeader,
       },
       body: JSON.stringify(body),
     });
 
-    const raw = await response.text(); // Nem parse-oljuk még
+    const raw = await response.text();
 
     try {
-      const data = JSON.parse(raw); // Ha sikerül, akkor minden ok
+      const data = JSON.parse(raw);
       return new Response(JSON.stringify(data), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
       });
-    } catch (parseErr) {
-      // Visszaadjuk a nyers választ szövegként, ha nem JSON
+    } catch {
       return new Response(
         JSON.stringify({
-          error: "Invalid JSON response from Ratehawk",
-          raw,
+          error: "Invalid JSON from Ratehawk",
+          url: rhUrl,
+          headersSent: {
+            Authorization: authHeader
+          },
+          raw
         }),
         {
           status: 502,
