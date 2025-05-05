@@ -41,7 +41,7 @@ const SearchForm = () => {
       region_id: parseInt(regionId),
       checkin,
       checkout,
-      residency: "HU",
+      residency: "hu",
       language: "en",
       currency: "HUF",
       guests: [
