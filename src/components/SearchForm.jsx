@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "./styles/searchform.css";
+import "./styles/SearchForm.css";
 
 const SearchForm = () => {
   const [regionId, setRegionId] = useState("");
