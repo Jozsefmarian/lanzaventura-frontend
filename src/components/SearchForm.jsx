@@ -1,39 +1,16 @@
-import React, { useState, useEffect } from "react";
-import "../styles/searchform.css";
+import React, { useState } from "react";
+import Autocomplete from "./Autocomplete";
 
 const SearchForm = () => {
-  const [regions, setRegions] = useState([]);
   const [region, setRegion] = useState(null);
   const [checkin, setCheckin] = useState("");
   const [checkout, setCheckout] = useState("");
   const [adults, setAdults] = useState(2);
-  const [hotels, setHotels] = useState([]);
-
-  // Autocomplete lekérés
-  useEffect(() => {
-    const fetchRegions = async () => {
-      try {
-        const res = await fetch("/api/autocomplete?q=Budapest");
-        const json = await res.json();
-        setRegions(json.data.regions.concat(json.data.hotels));
-      } catch (err) {
-        console.error("Autocomplete hiba:", err);
-      }
-    };
-
-    fetchRegions();
-  }, []);
-
-  const handleSelect = (e) => {
-    const selectedId = e.target.value;
-    const selectedRegion = regions.find((r) => String(r.id) === selectedId);
-    setRegion(selectedRegion);
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!region || !checkin || !checkout) {
+    if (!region || !checkin || !checkout || !adults) {
       alert("Kérlek, tölts ki minden mezőt!");
       return;
     }
@@ -44,42 +21,32 @@ const SearchForm = () => {
       residency: "HU",
       nationality: "HU",
       currency: "HUF",
-      guests: [
-        {
-          adults: Number(adults),
-          children: [],
-        },
-      ],
+      guests: [{ adults: Number(adults), children: [] }],
     };
 
     if (region.type === "region") {
       payload.ids = [String(region.id)];
     } else if (region.type === "hotel") {
-      payload.hids = [Number(region.id)];
+      payload.hids = [String(region.id)];
     }
 
-    console.log("🔹 Keresési payload:", payload);
-
     try {
-      const res = await fetch("/api/search", {
+      const response = await fetch("/api/search", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      const json = await res.json();
-      console.log("🔸 API válasz:", json);
+      const data = await response.json();
+      console.log("🔸 API válasz:", data);
 
-      if (json?.data?.hotels?.length > 0) {
-        setHotels(json.data.hotels);
+      if (data?.data?.hotels?.length > 0) {
+        alert(`Találatok száma: ${data.data.hotels.length}`);
       } else {
         alert("Nincs találat a megadott időpontra.");
-        setHotels([]);
       }
-    } catch (err) {
-      console.error("Keresési hiba:", err);
+    } catch (error) {
+      console.error("Keresési hiba:", error);
       alert("API hiba vagy nem megfelelő válasz.");
     }
   };
@@ -89,12 +56,15 @@ const SearchForm = () => {
       <form onSubmit={handleSubmit} className="search-form">
         <h2>Találj szállást a paradicsomban!</h2>
 
+        <Autocomplete onSelect={setRegion} />
+
         <input
           type="date"
           value={checkin}
           onChange={(e) => setCheckin(e.target.value)}
           required
         />
+
         <input
           type="date"
           value={checkout}
@@ -107,22 +77,12 @@ const SearchForm = () => {
           min="1"
           value={adults}
           onChange={(e) => setAdults(e.target.value)}
+          placeholder="Felnőttek száma"
           required
         />
 
         <button type="submit">Keresés</button>
       </form>
-
-      {hotels.length > 0 && (
-        <div className="results">
-          <h3>Találatok:</h3>
-          <ul>
-            {hotels.map((hotel) => (
-              <li key={hotel.id}>{hotel.name}</li>
-            ))}
-          </ul>
-        </div>
-      )}
     </div>
   );
 };
