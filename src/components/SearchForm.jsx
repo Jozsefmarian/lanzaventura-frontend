@@ -1,37 +1,42 @@
-import { useState } from "react";
-import "../styles/SearchForm.css";
+import React, { useState, useEffect } from "react";
+import "../styles/searchform.css";
 
-function SearchForm({ onSearch }) {
-  const [query, setQuery] = useState("");
+const SearchForm = () => {
+  const [regions, setRegions] = useState([]);
   const [region, setRegion] = useState(null);
-  const [suggestions, setSuggestions] = useState([]);
   const [checkin, setCheckin] = useState("");
   const [checkout, setCheckout] = useState("");
   const [adults, setAdults] = useState(2);
+  const [hotels, setHotels] = useState([]);
 
-  const fetchSuggestions = async (q) => {
-    setQuery(q);
-    if (q.length < 2) return;
+  // Autocomplete lekérés
+  useEffect(() => {
+    const fetchRegions = async () => {
+      try {
+        const res = await fetch("/api/autocomplete?q=Budapest");
+        const json = await res.json();
+        setRegions(json.data.regions.concat(json.data.hotels));
+      } catch (err) {
+        console.error("Autocomplete hiba:", err);
+      }
+    };
 
-    try {
-      const res = await fetch(`/api/autocomplete?q=${encodeURIComponent(q)}`);
-      const data = await res.json();
-      setSuggestions([...data.data.regions, ...data.data.hotels]);
-    } catch (err) {
-      console.error("Autocomplete hiba:", err);
-      setSuggestions([]);
-    }
-  };
+    fetchRegions();
+  }, []);
 
   const handleSelect = (e) => {
     const selectedId = e.target.value;
-    const selected = suggestions.find((item) => String(item.id) === selectedId);
-    setRegion(selected);
+    const selectedRegion = regions.find((r) => String(r.id) === selectedId);
+    setRegion(selectedRegion);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!region) return alert("Kérlek, válassz egy várost vagy hotelt!");
+
+    if (!region || !checkin || !checkout) {
+      alert("Kérlek, tölts ki minden mezőt!");
+      return;
+    }
 
     const payload = {
       checkin,
@@ -39,13 +44,18 @@ function SearchForm({ onSearch }) {
       residency: "HU",
       nationality: "HU",
       currency: "HUF",
-      guests: [{ adults: Number(adults), children: [] }],
+      guests: [
+        {
+          adults: Number(adults),
+          children: [],
+        },
+      ],
     };
 
-    if (region.type === "City" || region.type === "Region" || region.type === "region") {
-      payload.region_ids = [String(region.id)];
-    } else if (region.type === "Hotel" || region.type === "hotel") {
-      payload.hids = [String(region.id)];
+    if (region.type === "region") {
+      payload.ids = [String(region.id)];
+    } else if (region.type === "hotel") {
+      payload.hids = [Number(region.id)];
     }
 
     console.log("🔹 Keresési payload:", payload);
@@ -53,13 +63,21 @@ function SearchForm({ onSearch }) {
     try {
       const res = await fetch("/api/search", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
-      console.log("🔸 API válasz:", data);
-      onSearch(data);
+      const json = await res.json();
+      console.log("🔸 API válasz:", json);
+
+      if (json?.data?.hotels?.length > 0) {
+        setHotels(json.data.hotels);
+      } else {
+        alert("Nincs találat a megadott időpontra.");
+        setHotels([]);
+      }
     } catch (err) {
       console.error("Keresési hiba:", err);
       alert("API hiba vagy nem megfelelő válasz.");
@@ -71,26 +89,11 @@ function SearchForm({ onSearch }) {
       <form onSubmit={handleSubmit} className="search-form">
         <h2>Találj szállást a paradicsomban!</h2>
 
-        <input
-          type="text"
-          placeholder="Város vagy hotel keresése"
-          value={query}
-          onChange={(e) => fetchSuggestions(e.target.value)}
-          list="autocomplete-options"
-        />
-        <datalist id="autocomplete-options">
-          {suggestions.map((item) => (
-            <option key={item.id} value={item.name} data-id={item.id}>
-              {item.name}
-            </option>
-          ))}
-        </datalist>
-
         <select onChange={handleSelect} defaultValue="">
           <option value="" disabled>Válassz várost vagy hotelt</option>
-          {suggestions.map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.name} ({item.type})
+          {regions.map((r) => (
+            <option key={r.id} value={r.id}>
+              {r.name}
             </option>
           ))}
         </select>
@@ -99,22 +102,38 @@ function SearchForm({ onSearch }) {
           type="date"
           value={checkin}
           onChange={(e) => setCheckin(e.target.value)}
+          required
         />
         <input
           type="date"
           value={checkout}
           onChange={(e) => setCheckout(e.target.value)}
+          required
         />
+
         <input
           type="number"
           min="1"
           value={adults}
           onChange={(e) => setAdults(e.target.value)}
+          required
         />
+
         <button type="submit">Keresés</button>
       </form>
+
+      {hotels.length > 0 && (
+        <div className="results">
+          <h3>Találatok:</h3>
+          <ul>
+            {hotels.map((hotel) => (
+              <li key={hotel.id}>{hotel.name}</li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
-}
+};
 
 export default SearchForm;
