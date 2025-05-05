@@ -1,31 +1,27 @@
-export default async function handler(req, res) {
-  if (req.method !== "GET") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
+export const config = {
+  runtime: 'edge'
+};
 
-  const username = process.env.RATEHAWK_API_ID;
-  const password = process.env.RATEHAWK_API_KEY;
-  const auth = Buffer.from(`${username}:${password}`).toString("base64");
-
+export default async function handler() {
   try {
-    const response = await fetch("https://api.worldota.net/api/b2b/v3/hotel/region/dump/", {
-      method: "POST",
+    const response = await fetch('https://api.worldota.net/api/b2b/v3/regions/dump', {
       headers: {
-        "Authorization": `Basic ${auth}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({})
+        Authorization: 'Basic ' + btoa(`${process.env.RATEHAWK_USER_ID}:${process.env.RATEHAWK_TOKEN}`)
+      }
     });
 
     const data = await response.json();
 
-    if (!response.ok) {
-      return res.status(response.status).json({ error: data });
-    }
+    return new Response(JSON.stringify(data), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
 
-    // Ideiglenesen nem cache-elünk!
-    return res.status(200).json({ data });
   } catch (err) {
-    return res.status(500).json({ error: "Hiba a régiók lekérésekor", details: err.message });
+    console.error('Region dump error:', err);
+    return new Response(JSON.stringify({ error: 'Region dump failed' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 }
