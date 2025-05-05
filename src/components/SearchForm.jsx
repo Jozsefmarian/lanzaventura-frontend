@@ -1,62 +1,75 @@
 import React, { useState } from "react";
-import Autocomplete from "./Autocomplete";
+import "../styles/searchform.css";
 
 const SearchForm = () => {
-  const [region, setRegion] = useState(null);
+  const [regionId, setRegionId] = useState("");
   const [checkin, setCheckin] = useState("");
   const [checkout, setCheckout] = useState("");
   const [adults, setAdults] = useState(2);
+  const [results, setResults] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleSearch = async (e) => {
     e.preventDefault();
-
-    if (!region || !checkin || !checkout || !adults) {
+    if (!regionId || !checkin || !checkout) {
       alert("Kérlek, tölts ki minden mezőt!");
       return;
     }
 
     const payload = {
+      region_id: parseInt(regionId),
       checkin,
       checkout,
       residency: "HU",
-      nationality: "HU",
+      language: "en",
       currency: "HUF",
-      guests: [{ adults: Number(adults), children: [] }],
+      guests: [
+        {
+          adults: parseInt(adults),
+          children: []
+        }
+      ]
     };
 
-    if (region.type === "region") {
-      payload.ids = [String(region.id)];
-    } else if (region.type === "hotel") {
-      payload.hids = [String(region.id)];
-    }
-
     try {
-      const response = await fetch("/api/search", {
+      setLoading(true);
+      console.log("🔹 Keresési payload:", payload);
+
+      const res = await fetch("/api/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
       });
 
-      const data = await response.json();
+      const data = await res.json();
       console.log("🔸 API válasz:", data);
 
-      if (data?.data?.hotels?.length > 0) {
-        alert(`Találatok száma: ${data.data.hotels.length}`);
+      if (data?.data?.hotels?.length) {
+        setResults(data.data.hotels);
       } else {
-        alert("Nincs találat a megadott időpontra.");
+        alert("Nincs találat a megadott időszakra.");
+        setResults([]);
       }
-    } catch (error) {
-      console.error("Keresési hiba:", error);
+    } catch (err) {
+      console.error("Keresési hiba:", err);
       alert("API hiba vagy nem megfelelő válasz.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="search-background">
-      <form onSubmit={handleSubmit} className="search-form">
+    <div className="search-container">
+      <form className="search-form" onSubmit={handleSearch}>
         <h2>Találj szállást a paradicsomban!</h2>
 
-        <Autocomplete onSelect={setRegion} />
+        <input
+          type="text"
+          placeholder="Úticél (pl. Budapest region ID: 715)"
+          value={regionId}
+          onChange={(e) => setRegionId(e.target.value)}
+          required
+        />
 
         <input
           type="date"
@@ -77,12 +90,25 @@ const SearchForm = () => {
           min="1"
           value={adults}
           onChange={(e) => setAdults(e.target.value)}
-          placeholder="Felnőttek száma"
           required
+          placeholder="Felnőttek száma"
         />
 
-        <button type="submit">Keresés</button>
+        <button type="submit" disabled={loading}>
+          {loading ? "Keresés folyamatban..." : "Keresés"}
+        </button>
       </form>
+
+      {results && (
+        <div className="results">
+          <h3>{results.length} találat</h3>
+          <ul>
+            {results.map((hotel) => (
+              <li key={hotel.id}>{hotel.name}</li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 };
