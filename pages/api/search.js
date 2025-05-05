@@ -1,3 +1,5 @@
+// pages/api/search.js
+
 import axios from "axios";
 
 export default async function handler(req, res) {
@@ -6,10 +8,18 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { region_id, checkin, checkout, residency, language, guests, currency } = req.body;
+    const {
+      region_id,
+      checkin,
+      checkout,
+      residency,
+      language,
+      guests,
+      currency
+    } = req.body;
 
     const payload = {
-      region_id,
+      region_id: String(region_id), // <-- FONTOS: stringként küldjük
       checkin,
       checkout,
       residency,
@@ -23,7 +33,9 @@ export default async function handler(req, res) {
       payload,
       {
         headers: {
-          Authorization: `Basic ${Buffer.from(`${process.env.RATEHAWK_API_ID}:${process.env.RATEHAWK_API_KEY}`).toString("base64")}`,
+          Authorization: `Basic ${Buffer.from(
+            `${process.env.RATEHAWK_API_ID}:${process.env.RATEHAWK_API_KEY}`
+          ).toString("base64")}`,
           "Content-Type": "application/json"
         }
       }
