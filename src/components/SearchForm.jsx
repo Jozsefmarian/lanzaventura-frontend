@@ -58,6 +58,7 @@ const SearchForm = ({ setResults }) => {
       });
 
       const data = await res.json();
+
       if (data?.data?.hotels?.length) {
         setResults(data.data.hotels);
       } else {
@@ -75,38 +76,51 @@ const SearchForm = ({ setResults }) => {
   return (
     <form onSubmit={handleSearch} className="search-form">
       <input
-  type="text"
-  placeholder="Város"
-  value={query}
-  onChange={(e) => {
-    const val = e.target.value;
-    setQuery(val);
-
-    // Automatikusan keressük ki a régió ID-ját a név alapján
-    const match = suggestions.find((r) => r.name.toLowerCase() === val.toLowerCase());
-    if (match) {
-      setRegionId(match.id);
-    } else {
-      setRegionId(""); // ha nem egyezik, nullázunk
-    }
-  }}
-  list="region-suggestions"
-  required
-/>
+        type="text"
+        name="destination"
+        placeholder="Város"
+        value={query}
+        onChange={(e) => {
+          const val = e.target.value;
+          setQuery(val);
+          const match = suggestions.find((r) => r.name.toLowerCase() === val.toLowerCase());
+          if (match) {
+            setRegionId(match.id);
+          } else {
+            setRegionId("");
+          }
+        }}
+        list="region-suggestions"
+        required
+      />
       <datalist id="region-suggestions">
         {suggestions.map((region) => (
-          <option key={region.id} value={region.name} onClick={() => setRegionId(region.id)} />
+          <option key={region.id} value={region.name} />
         ))}
       </datalist>
 
-      <input type="date" value={checkin} onChange={(e) => setCheckin(e.target.value)} required />
-      <input type="date" value={checkout} onChange={(e) => setCheckout(e.target.value)} required />
+      <input
+        type="date"
+        name="checkin"
+        value={checkin}
+        onChange={(e) => setCheckin(e.target.value)}
+        required
+      />
+      <input
+        type="date"
+        name="checkout"
+        value={checkout}
+        onChange={(e) => setCheckout(e.target.value)}
+        required
+      />
       <input
         type="number"
+        name="adults"
         min="1"
         value={adults}
         onChange={(e) => setAdults(e.target.value)}
         placeholder="Felnőttek"
+        required
       />
       <button type="submit" disabled={loading}>
         {loading ? "Keresés..." : "Keresés"}
