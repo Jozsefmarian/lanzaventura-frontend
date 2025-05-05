@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from "react";
 import "../styles/SearchForm.css";
 
-const SearchForm = () => {
+const SearchForm = ({ setResults }) => {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [regionId, setRegionId] = useState("");
   const [checkin, setCheckin] = useState("");
   const [checkout, setCheckout] = useState("");
   const [adults, setAdults] = useState(2);
-  const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
 
   // Autocomplete lekérdezés
@@ -24,9 +23,7 @@ const SearchForm = () => {
         setSuggestions([]);
       }
     };
-    const delayDebounce = setTimeout(() => {
-      fetchSuggestions();
-    }, 300);
+    const delayDebounce = setTimeout(fetchSuggestions, 300);
     return () => clearTimeout(delayDebounce);
   }, [query]);
 
@@ -47,24 +44,20 @@ const SearchForm = () => {
       guests: [
         {
           adults: parseInt(adults),
-          children: []
-        }
-      ]
+          children: [],
+        },
+      ],
     };
 
     try {
       setLoading(true);
-      console.log("🔹 Keresési payload:", payload);
-
       const res = await fetch("/api/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
-      console.log("🔸 API válasz:", data);
-
       if (data?.data?.hotels?.length) {
         setResults(data.data.hotels);
       } else {
@@ -73,85 +66,41 @@ const SearchForm = () => {
       }
     } catch (err) {
       console.error("Keresési hiba:", err);
-      alert("API hiba vagy nem megfelelő válasz.");
+      alert("Hiba történt a keresés során.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="search-background">
-      <form className="search-form" onSubmit={handleSearch}>
-        <h2>Találj szállást a paradicsomban!</h2>
+    <form onSubmit={handleSearch} className="search-form">
+      <input
+        type="text"
+        placeholder="Város"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        list="region-suggestions"
+        required
+      />
+      <datalist id="region-suggestions">
+        {suggestions.map((region) => (
+          <option key={region.id} value={region.name} onClick={() => setRegionId(region.id)} />
+        ))}
+      </datalist>
 
-        <div className="autocomplete-wrapper">
-          <input
-            type="text"
-            placeholder="Úticél (pl. Budapest)"
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setRegionId(""); // reset if user újra gépel
-            }}
-            required
-          />
-          {suggestions.length > 0 && (
-            <ul className="autocomplete-list">
-              {suggestions.map((region) => (
-                <li
-                  key={region.id}
-                  onClick={() => {
-                    setQuery(region.name);
-                    setRegionId(region.id);
-                    setSuggestions([]);
-                  }}
-                >
-                  {region.name}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        <input
-          type="date"
-          value={checkin}
-          onChange={(e) => setCheckin(e.target.value)}
-          required
-        />
-
-        <input
-          type="date"
-          value={checkout}
-          onChange={(e) => setCheckout(e.target.value)}
-          required
-        />
-
-        <input
-          type="number"
-          min="1"
-          value={adults}
-          onChange={(e) => setAdults(e.target.value)}
-          required
-          placeholder="Felnőttek száma"
-        />
-
-        <button type="submit" disabled={loading}>
-          {loading ? "Keresés folyamatban..." : "Keresés"}
-        </button>
-      </form>
-
-      {results && (
-        <div className="results">
-          <h3>{results.length} találat</h3>
-          <ul>
-            {results.map((hotel) => (
-              <li key={hotel.id}>{hotel.name}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
+      <input type="date" value={checkin} onChange={(e) => setCheckin(e.target.value)} required />
+      <input type="date" value={checkout} onChange={(e) => setCheckout(e.target.value)} required />
+      <input
+        type="number"
+        min="1"
+        value={adults}
+        onChange={(e) => setAdults(e.target.value)}
+        placeholder="Felnőttek"
+      />
+      <button type="submit" disabled={loading}>
+        {loading ? "Keresés..." : "Keresés"}
+      </button>
+    </form>
   );
 };
 
