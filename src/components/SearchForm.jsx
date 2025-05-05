@@ -59,7 +59,7 @@ const SearchForm = () => {
   };
 
   return (
-    <div className="search-container">
+    <div className="search-background">
       <form className="search-form" onSubmit={handleSearch}>
         <h2>Találj szállást a paradicsomban!</h2>
 
