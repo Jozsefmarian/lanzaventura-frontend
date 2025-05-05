@@ -75,13 +75,24 @@ const SearchForm = ({ setResults }) => {
   return (
     <form onSubmit={handleSearch} className="search-form">
       <input
-        type="text"
-        placeholder="Város"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        list="region-suggestions"
-        required
-      />
+  type="text"
+  placeholder="Város"
+  value={query}
+  onChange={(e) => {
+    const val = e.target.value;
+    setQuery(val);
+
+    // Automatikusan keressük ki a régió ID-ját a név alapján
+    const match = suggestions.find((r) => r.name.toLowerCase() === val.toLowerCase());
+    if (match) {
+      setRegionId(match.id);
+    } else {
+      setRegionId(""); // ha nem egyezik, nullázunk
+    }
+  }}
+  list="region-suggestions"
+  required
+/>
       <datalist id="region-suggestions">
         {suggestions.map((region) => (
           <option key={region.id} value={region.name} onClick={() => setRegionId(region.id)} />
