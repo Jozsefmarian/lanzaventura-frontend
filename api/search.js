@@ -14,13 +14,13 @@ export default async function handler(req) {
     const body = await req.json();
 
     const rhUrl = 'https://api.worldota.net/api/b2b/v3/search';
-    const authHeader = 'Basic ' + btoa(`${process.env.RATEHAWK_USER_ID}:${process.env.RATEHAWK_API_KEY}`);
+    const authBase64 = process.env.RATEHAWK_AUTH_BASE64;
 
     const response = await fetch(rhUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: authHeader,
+        Authorization: 'Basic ' + authBase64,
       },
       body: JSON.stringify(body),
     });
@@ -37,11 +37,7 @@ export default async function handler(req) {
       return new Response(
         JSON.stringify({
           error: "Invalid JSON from Ratehawk",
-          url: rhUrl,
-          headersSent: {
-            Authorization: authHeader
-          },
-          raw
+          raw,
         }),
         {
           status: 502,
