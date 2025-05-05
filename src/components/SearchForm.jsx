@@ -89,15 +89,6 @@ const SearchForm = () => {
       <form onSubmit={handleSubmit} className="search-form">
         <h2>Találj szállást a paradicsomban!</h2>
 
-        <select onChange={handleSelect} defaultValue="">
-          <option value="" disabled>Válassz várost vagy hotelt</option>
-          {regions.map((r) => (
-            <option key={r.id} value={r.id}>
-              {r.name}
-            </option>
-          ))}
-        </select>
-
         <input
           type="date"
           value={checkin}
