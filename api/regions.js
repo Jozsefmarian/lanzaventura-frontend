@@ -6,7 +6,7 @@ export default async function handler() {
   try {
     const response = await fetch('https://api.worldota.net/api/b2b/v3/regions/dump', {
       headers: {
-        Authorization: 'Basic ' + btoa(`${process.env.RATEHAWK_USER_ID}:${process.env.RATEHAWK_TOKEN}`)
+        Authorization: 'Basic ' + btoa(`${process.env.RATEHAWK_USER_ID}:${process.env.RATEHAWK_API_KEY}`)
       }
     });
 

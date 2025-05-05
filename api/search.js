@@ -17,7 +17,7 @@ export default async function handler(req) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: 'Basic ' + btoa(`${process.env.RATEHAWK_USER_ID}:${process.env.RATEHAWK_TOKEN}`)
+        Authorization: 'Basic ' + btoa(`${process.env.RATEHAWK_USER_ID}:${process.env.RATEHAWK_API_KEY}`)
       },
       body: JSON.stringify(body),
     });
