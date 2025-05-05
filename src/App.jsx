@@ -1,6 +1,7 @@
+
 import React from "react";
 import SearchForm from "./components/SearchForm";
-import "./styles/SearchForm.css"; // biztosítjuk, hogy a stílus érvényesüljön
+import "./styles/SearchForm.css";
 
 function App() {
   return (

@@ -1,13 +1,34 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../styles/SearchForm.css";
 
 const SearchForm = () => {
+  const [query, setQuery] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
   const [regionId, setRegionId] = useState("");
   const [checkin, setCheckin] = useState("");
   const [checkout, setCheckout] = useState("");
   const [adults, setAdults] = useState(2);
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // Autocomplete lekérdezés
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      if (!query) return;
+      try {
+        const res = await fetch(`/api/autocomplete?q=${query}`);
+        const data = await res.json();
+        setSuggestions(data?.data?.regions || []);
+      } catch (err) {
+        console.error("Autocomplete hiba:", err);
+        setSuggestions([]);
+      }
+    };
+    const delayDebounce = setTimeout(() => {
+      fetchSuggestions();
+    }, 300);
+    return () => clearTimeout(delayDebounce);
+  }, [query]);
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -63,13 +84,34 @@ const SearchForm = () => {
       <form className="search-form" onSubmit={handleSearch}>
         <h2>Találj szállást a paradicsomban!</h2>
 
-        <input
-          type="text"
-          placeholder="Úticél (pl. Budapest region ID: 715)"
-          value={regionId}
-          onChange={(e) => setRegionId(e.target.value)}
-          required
-        />
+        <div className="autocomplete-wrapper">
+          <input
+            type="text"
+            placeholder="Úticél (pl. Budapest)"
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setRegionId(""); // reset if user újra gépel
+            }}
+            required
+          />
+          {suggestions.length > 0 && (
+            <ul className="autocomplete-list">
+              {suggestions.map((region) => (
+                <li
+                  key={region.id}
+                  onClick={() => {
+                    setQuery(region.name);
+                    setRegionId(region.id);
+                    setSuggestions([]);
+                  }}
+                >
+                  {region.name}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
 
         <input
           type="date"
