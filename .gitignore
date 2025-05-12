@@ -1,0 +1,20 @@
+# Node/Vite build és cache mappák
+node_modules/
+dist/
+.vite/
+
+# Vercel config és deploy output
+.vercel/
+
+# Környezeti változók
+.env*
+.env.local
+
+# Adat- vagy API dump fájlok
+region.json*
+region_v3.jsonl*
+request.json
+
+# Windows shortcut véletlenek
+*.lnk
+
