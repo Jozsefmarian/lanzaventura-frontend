@@ -25,7 +25,7 @@ export default async function handler(req, res) {
       }
     );
 
-    res.status(200).json(response.data);
+    return res.status(200).json(response.data);
   } catch (error) {
     console.error("Hotel info fetch failed:", error?.response?.data || error.message);
     res.status(500).json({
