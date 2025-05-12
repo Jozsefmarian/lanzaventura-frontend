@@ -14,12 +14,24 @@ export default function SearchForm({ setResults }) {
 
   // Autocomplete: fájlból betöltött városlista
   // Autocomplete: valós időben az API-ból
+// Autocomplete: Ratehawk valós idejű régiójavaslatok
 useEffect(() => {
-  fetch("/api/regions")
-    .then((res) => res.json())
-    .then((data) => setSuggestions(data))
-    .catch((err) => console.error("Autocomplete load error:", err));
-}, []);
+  if (query.length < 2) {
+    setSuggestions([]);
+    return;
+  }
+
+  const timeout = setTimeout(() => {
+    fetch(`/api/autocomplete?q=${encodeURIComponent(query)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setSuggestions(data?.data?.regions || []);
+      })
+      .catch((err) => console.error("Autocomplete load error:", err));
+  }, 300); // debounce 300ms
+
+  return () => clearTimeout(timeout);
+}, [query]);
 
   const onChangeQuery = (e) => {
     const val = e.target.value;
