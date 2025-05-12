@@ -89,10 +89,10 @@ export default async function handler(req) {
       };
     });
 
-    return new Response(JSON.stringify({ hotels }), {
-      headers: { "Content-Type": "application/json" },
-      status: 200,
-    });
+    return new Response(JSON.stringify({ hotels: hotelData.data.hotels }), {
+  headers: { "Content-Type": "application/json" },
+  status: 200,
+});
   } catch (error) {
     return new Response(JSON.stringify({ error: "Unhandled error", details: error.message }), { status: 500 });
   }
