@@ -1,33 +1,51 @@
-import { Link } from "react-router-dom";
-import "../styles/HotelList.css";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 export default function HotelList({ hotels }) {
-  if (!hotels || hotels.length === 0) {
-    return <p className="no-results">Nem találtunk szállást a megadott időszakra.</p>;
-  }
+  const [hotelInfos, setHotelInfos] = useState([]);
+
+  useEffect(() => {
+    const fetchHotelInfos = async () => {
+      try {
+        cconst results = await Promise.all(
+  hotels.map((hotel) =>
+    axios.post("/api/hotel", { hotel_id: hotel.hid }).then((res) => ({
+      ...res.data,
+      hid: hotel.hid,
+      rooms: hotel.rooms,
+    }))
+  )
+);
+        setHotelInfos(results);
+      } catch (error) {
+        console.error("Hiba a hotelinfók lekérésekor:", error);
+      }
+    };
+
+    if (hotels.length > 0) {
+      fetchHotelInfos();
+    }
+  }, [hotels]);
 
   return (
-    <div className="hotel-list-vertical">
-      {hotels.map((hotel) => (
-        <Link to={`/hotel/${hotel.id}`} key={hotel.id} className="hotel-card-horizontal">
-          {hotel.mainPhoto && (
+    <div className="hotel-list">
+      {hotelInfos.map((hotel, index) => (
+        <div key={hotel.hid || index} className="hotel-card">
+          <h2>{hotel.name?.value || "Névtelen hotel"}</h2>
+          <p>{hotel.address?.text || "Cím nem elérhető"}</p>
+          {hotel.main_photo && (
             <img
-              src={hotel.mainPhoto}
-              alt={hotel.name}
-              className="hotel-image"
+              src={hotel.main_photo}
+              alt={hotel.name?.value || "Hotel"}
+              width="300"
             />
           )}
-          <div className="hotel-info">
-            <h2 className="hotel-name">{hotel.name}</h2>
-            {hotel.address && hotel.address !== "N/A" && (
-  <p className="hotel-address">{hotel.address}</p>
-)}
-
-{hotel.starRating && (
-  <p className="hotel-stars">⭐ {hotel.starRating} csillag</p>
-)}
-          </div>
-        </Link>
+          {hotel.rooms?.[0]?.rate?.amount && (
+            <p>
+              Ár: {hotel.rooms[0].rate.amount} {hotel.rooms[0].rate.currency}
+            </p>
+          )}
+        </div>
       ))}
     </div>
   );
