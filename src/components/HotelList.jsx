@@ -20,10 +20,12 @@ export default function HotelList({ hotels }) {
           <div className="hotel-info">
             <h2 className="hotel-name">{hotel.name}</h2>
             {hotel.address && hotel.address !== "N/A" && (
-            <p className="hotel-address">{hotel.address}</p>
-            {hotel.starRating && (
-              <p className="hotel-stars">⭐ {hotel.starRating} csillag</p>
-            )}
+  <p className="hotel-address">{hotel.address}</p>
+)}
+
+{hotel.starRating && (
+  <p className="hotel-stars">⭐ {hotel.starRating} csillag</p>
+)}
           </div>
         </Link>
       ))}
