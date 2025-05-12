@@ -1,7 +1,3 @@
-export const config = {
-  runtime: "nodejs",
-};
-
 import axios from "axios";
 
 export default async function handler(req, res) {
@@ -10,10 +6,6 @@ export default async function handler(req, res) {
   }
 
   const { hotel_id } = req.body;
-
-  // 🔍 Logoljuk, hogy mit kaptunk és milyen auth-tal dolgozunk
-  console.log("Hotel info API hívás - hotel_id:", hotel_id);
-  console.log("Auth ENV:", process.env.RATEHAWK_USER_ID, process.env.RATEHAWK_API_KEY);
 
   try {
     const response = await axios.post(
