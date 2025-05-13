@@ -2,60 +2,49 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 export default function HotelList({ hotels, searchParams }) {
-  const [hotelInfos, setHotelInfos] = useState([]);
+  const [hotelDetails, setHotelDetails] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-  const fetchHotelInfos = async () => {
-    try {
-      const results = await Promise.all(
-  hotels.map((hotel) =>
-    axios
-      .post("/api/hotel", {
-        hotel_id: hotel.hid,
-        checkin: searchParams.checkin,
-        checkout: searchParams.checkout,
-        guests: searchParams.guests,
-        currency: "HUF",
-        residency: "HU",
-      })
-      .then((res) => ({
-        ...res.data,
-        hid: hotel.hid,
-        rooms: hotel.rooms,
-      }))
-  )
-);
-      setHotelInfos(results);
-    } catch (error) {
-      console.error("Hiba a hotelinfók lekérésekor:", error);
+    const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+
+    const fetchHotelDetails = async () => {
+      const results = [];
+
+      for (let i = 0; i < Math.min(hotels.length, 10); i++) {
+        const hotel = hotels[i];
+
+        try {
+          const res = await axios.post("/api/hotel", {
+            hotel_id: hotel.hid,
+            checkin: searchParams.checkin,
+            checkout: searchParams.checkout,
+            guests: searchParams.guests,
+            currency: "HUF",
+            residency: "HU",
+          });
+
+          results.push({
+            ...res.data,
+            hid: hotel.hid,
+            rooms: hotel.rooms,
+          });
+        } catch (error) {
+          console.error("Hotel fetch failed:", error);
+        }
+
+        // ⏳ 1 másodperces késleltetés, hogy ne lépjük túl a limitet
+        await delay(1000);
+      }
+
+      setHotelDetails(results);
+      setLoading(false);
+    };
+
+    if (hotels && hotels.length > 0 && searchParams) {
+      fetchHotelDetails();
     }
-  };
+  }, [hotels, searchParams]);
 
-  if (hotels.length > 0) {
-    fetchHotelInfos();
-  }
-}, [hotels]);
-
-  return (
-    <div className="hotel-list">
-      {hotelInfos.map((hotel, index) => (
-        <div key={hotel.hid || index} className="hotel-card">
-          <h2>{hotel.name?.value || "Névtelen hotel"}</h2>
-          <p>{hotel.address?.text || "Cím nem elérhető"}</p>
-          {hotel.main_photo && (
-            <img
-              src={hotel.main_photo}
-              alt={hotel.name?.value || "Hotel"}
-              width="300"
-            />
-          )}
-          {hotel.rooms?.[0]?.rate?.amount && (
-            <p>
-              Ár: {hotel.rooms[0].rate.amount} {hotel.rooms[0].rate.currency}
-            </p>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-}
+  if (loading) {
+    return <p>Betöltés.
