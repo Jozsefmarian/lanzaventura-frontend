@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 
 export default function HotelList({ hotels, searchParams }) {
   const [hotelDetails, setHotelDetails] = useState([]);
   const [loading, setLoading] = useState(true);
+  const hasFetched = useRef(false);
 
   useEffect(() => {
     const delay = (ms) => new Promise((res) => setTimeout(res, ms));
@@ -22,6 +23,7 @@ export default function HotelList({ hotels, searchParams }) {
             guests: searchParams.guests,
             currency: "HUF",
             residency: "HU",
+            language: "en",
           });
 
           results.push({
@@ -30,23 +32,40 @@ export default function HotelList({ hotels, searchParams }) {
             rooms: hotel.rooms,
           });
         } catch (error) {
-          console.error("Hotel fetch failed:", error);
+          console.error("❌ Hotel info fetch failed:", error?.response?.data || error.message);
         }
 
-        // ⏳ 1 másodperces késleltetés, hogy ne lépjük túl a limitet
-        await delay(1000);
+        await delay(1000); // max. 10 request per minute
       }
 
       setHotelDetails(results);
       setLoading(false);
     };
 
-    if (hotels && hotels.length > 0 && searchParams) {
+    if (!hasFetched.current && hotels.length > 0 && searchParams) {
+      hasFetched.current = true;
       fetchHotelDetails();
     }
   }, [hotels, searchParams]);
 
-if (loading) {
-  return <p>Betöltés...</p>;
-}
+  if (loading) {
+    return <p>Betöltés...</p>;
+  }
 
+  return (
+    <div className="hotel-list">
+      {hotelDetails.map((hotel) => (
+        <div key={hotel.hid} className="hotel-card">
+          <h2>{hotel.name}</h2>
+          <p>{hotel.address}</p>
+          {hotel.main_photo?.url && (
+            <img src={hotel.main_photo.url} alt={hotel.name} />
+          )}
+          <p>
+            {hotel.min_price} {hotel.currency}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+}
