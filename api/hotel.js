@@ -2,23 +2,21 @@ import axios from "axios";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Only POST allowed" });
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { hotel_id, checkin, checkout, guests, currency, residency } = req.body;
-  console.log("📦 /api/hotel kapott body:", req.body);
+  const { hotel_id } = req.body;
+
+  if (!hotel_id) {
+    return res.status(400).json({ error: "Missing hotel_id" });
+  }
 
   try {
     const response = await axios.post(
-      "https://api.worldota.net/api/b2b/v3/search/hp",
+      "https://api.worldota.net/api/b2b/v3/hotel/info/",
       {
-        hid: hotel_id,
-        checkin,
-        checkout,
-        guests,
-        currency,
-        residency,
-        language: "en"
+        hotel_id,
+        language: "en",
       },
       {
         auth: {
@@ -33,8 +31,8 @@ export default async function handler(req, res) {
 
     return res.status(200).json(response.data);
   } catch (error) {
-    console.error("Hotel info fetch failed:", error?.response?.data || error.message);
-    res.status(500).json({
+    console.error("❌ Hotel info fetch failed:", error?.response?.data || error.message);
+    return res.status(500).json({
       error: "Failed to fetch hotel info",
       details: error?.response?.data || error.message,
     });
