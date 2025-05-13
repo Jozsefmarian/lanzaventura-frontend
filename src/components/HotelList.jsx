@@ -1,23 +1,30 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-export default function HotelList({ hotels }) {
+export default function HotelList({ hotels, searchParams }) {
   const [hotelInfos, setHotelInfos] = useState([]);
 
   useEffect(() => {
   const fetchHotelInfos = async () => {
     try {
       const results = await Promise.all(
-        hotels.map((hotel) =>
-          axios
-            .post("/api/hotel", { hotel_id: hotel.hid })
-            .then((res) => ({
-              ...res.data,
-              hid: hotel.hid,
-              rooms: hotel.rooms,
-            }))
-        )
-      );
+  hotels.map((hotel) =>
+    axios
+      .post("/api/hotel", {
+        hotel_id: hotel.hid,
+        checkin: searchParams.checkin,
+        checkout: searchParams.checkout,
+        guests: searchParams.guests,
+        currency: "HUF",
+        residency: "HU",
+      })
+      .then((res) => ({
+        ...res.data,
+        hid: hotel.hid,
+        rooms: hotel.rooms,
+      }))
+  )
+);
       setHotelInfos(results);
     } catch (error) {
       console.error("Hiba a hotelinfók lekérésekor:", error);

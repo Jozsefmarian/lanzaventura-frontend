@@ -39,7 +39,7 @@ export default function ResultsPage() {
       {loading ? (
         <p>Keresés folyamatban...</p>
       ) : (
-        <HotelList hotels={hotels} />
+        <HotelList hotels={hotels} searchParams={searchParams} />
       )}
     </div>
   );
