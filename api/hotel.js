@@ -12,7 +12,7 @@ export default async function handler(req, res) {
     const response = await axios.post(
       "https://api.worldota.net/api/b2b/v3/search/hp",
       {
-        hotel_id,
+        hid: hotel_id,
         checkin,
         checkout,
         guests,
