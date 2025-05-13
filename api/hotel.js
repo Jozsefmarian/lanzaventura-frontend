@@ -5,14 +5,20 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Only POST allowed" });
   }
 
-  const { hotel_id } = req.body;
+  const { hotel_id, checkin, checkout, guests, currency, residency } = req.body;
+  console.log("📦 /api/hotel kapott body:", req.body);
 
   try {
     const response = await axios.post(
-      "https://api.worldota.net/api/b2b/v3/hotel/info/",
+      "https://api.worldota.net/api/b2b/v3/search/hp",
       {
         hotel_id,
-        language: "en",
+        checkin,
+        checkout,
+        guests,
+        currency,
+        residency,
+        language: "en"
       },
       {
         auth: {
