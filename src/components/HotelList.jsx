@@ -46,5 +46,7 @@ export default function HotelList({ hotels, searchParams }) {
     }
   }, [hotels, searchParams]);
 
-  if (loading) {
-    return <p>Betöltés.
+if (loading) {
+  return <p>Betöltés...</p>;
+}
+
